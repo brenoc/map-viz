@@ -23,22 +23,40 @@ def root():
     return json.dumps(response)
 
 
-@app.route("/api/places")
-def places():
+@app.route("/api/courses")
+@cache.cached(timeout=50)
+def courses():
     response = {
-        'places': getPlaces()
+        'courses': getCourses()
     }
 
     return json.dumps(response)
 
 
-@cache.memoize(timeout=5)
-def getPlaces():
-    return list(set(map(getPlace, features)))
+def getCourses():
+    return list(set(map(getCourse, features)))
 
 
-def getPlace(feature):
+def getCourse(feature):
     return feature['properties']['prod_ds']
+
+
+@app.route("/api/institutions")
+@cache.cached(timeout=50)
+def institutions():
+    response = {
+        'institutions': getInstitutions()
+    }
+
+    return json.dumps(response)
+
+
+def getInstitutions():
+    return list(set(map(getInstitution, features)))
+
+
+def getInstitution(feature):
+    return feature['properties']['conveniado']
 
 
 @cache.memoize(timeout=5)

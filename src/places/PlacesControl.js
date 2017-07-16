@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Controllers from "./Controllers";
+import Places from "./Places";
 
-class MapControllers {
+class PlacesControl {
   constructor(props) {
     this.props = props;
   }
@@ -10,7 +10,7 @@ class MapControllers {
   onAdd() {
     this._container = document.createElement("div");
 
-    ReactDOM.render(<Controllers {...this.props} />, this._container);
+    ReactDOM.render(<Places {...this.props} />, this._container);
 
     return this._container;
   }
@@ -20,4 +20,4 @@ class MapControllers {
   }
 }
 
-export default MapControllers;
+export default PlacesControl;

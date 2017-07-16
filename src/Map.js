@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import MapControllers from "./MapControllers";
+import PlacesControl from "./places/PlacesControl";
+import InstitutionsControl from "./institutions/InstitutionsControl";
+import CoursesControl from "./courses/CoursesControl";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYnJlbm9jYWxhemFucyIsImEiOiI0YTBjN2M5NWQzNjJkODJlYzQyYjk5YTQ0NGE5NmIxNiJ9.GAoDtuWblQorGcnnSvVrJQ";
@@ -63,7 +65,7 @@ class Map extends Component {
     map.removeLayer("cluster-count");
     map.removeLayer("unclustered-point");
     map.removeControl(this.nav);
-    map.removeControl(this.mapControllers);
+    map.removeControl(this.placesControl);
   };
 
   changeMapPoints = () => {
@@ -72,11 +74,23 @@ class Map extends Component {
     this.nav = new mapboxgl.NavigationControl();
     map.addControl(this.nav, "top-right");
 
-    this.mapControllers = new MapControllers({
+    this.institutionsControl = new InstitutionsControl({
       onChangeVisibleTypes: this.handleChangeVisibleTypes,
       visibleTypes: this.state.visibleTypes
     });
-    map.addControl(this.mapControllers, "top-left");
+    map.addControl(this.institutionsControl, "top-left");
+
+    this.coursesControl = new CoursesControl({
+      onChangeVisibleTypes: this.handleChangeVisibleTypes,
+      visibleTypes: this.state.visibleTypes
+    });
+    map.addControl(this.coursesControl, "top-left");
+
+    this.placesControl = new PlacesControl({
+      onChangeVisibleTypes: this.handleChangeVisibleTypes,
+      visibleTypes: this.state.visibleTypes
+    });
+    map.addControl(this.placesControl, "top-left");
 
     map.addSource("ide", {
       type: "geojson",

@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.16.2",
     "mapbox-gl": "^0.38.0",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
+    "react-autocomplete": "^1.5.9",
     "react-dom": "^15.6.1"
   },
   "devDependencies": {
