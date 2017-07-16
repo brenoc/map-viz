@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import MapControllers from "./MapControllers";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYnJlbm9jYWxhemFucyIsImEiOiI0YTBjN2M5NWQzNjJkODJlYzQyYjk5YTQ0NGE5NmIxNiJ9.GAoDtuWblQorGcnnSvVrJQ";
@@ -10,8 +10,16 @@ class Map extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      visibleTypes: ["res", "trab"]
+    };
+
     this.mountDiv = this.mountDiv.bind(this);
   }
+
+  handleChangeVisibleTypes = visibleTypes => {
+    this.setState({ visibleTypes });
+  };
 
   mountDiv = div => {
     if (!div) return;
@@ -24,8 +32,8 @@ class Map extends Component {
     });
   };
 
-  shouldComponentUpdate(nextProps) {
-    return nextProps.filters.join() !== this.props.filters.join();
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState.visibleTypes.join() !== this.state.visibleTypes.join();
   }
 
   componentDidMount() {
@@ -54,17 +62,25 @@ class Map extends Component {
     map.removeLayer("clusters");
     map.removeLayer("cluster-count");
     map.removeLayer("unclustered-point");
+    map.removeControl(this.nav);
+    map.removeControl(this.mapControllers);
   };
 
   changeMapPoints = () => {
     const map = this.map;
 
-    var nav = new mapboxgl.NavigationControl();
-    map.addControl(nav, "top-left");
+    this.nav = new mapboxgl.NavigationControl();
+    map.addControl(this.nav, "top-right");
+
+    this.mapControllers = new MapControllers({
+      onChangeVisibleTypes: this.handleChangeVisibleTypes,
+      visibleTypes: this.state.visibleTypes
+    });
+    map.addControl(this.mapControllers, "top-left");
 
     map.addSource("ide", {
       type: "geojson",
-      data: `/api/points?filters=${this.props.filters.join(",")}`,
+      data: `/api/points?visibleTypes=${this.state.visibleTypes.join(",")}`,
       cluster: true,
       clusterMaxZoom: 14, // Max zoom to cluster points on
       clusterRadius: 50
@@ -130,9 +146,5 @@ class Map extends Component {
     );
   }
 }
-
-Map.propTypes = {
-  filters: PropTypes.array
-};
 
 export default Map;

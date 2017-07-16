@@ -1,31 +1,33 @@
 from flask import Flask, request
+from flask_caching import Cache
 import json
 
-# https://github.com/mojodna/tessera
-# https://github.com/mapbox/tilelive
-# https://www.mapbox.com/studio/styles/brenocalazans/cj4z2tgaa0c3l2rrmd068akik/edit/
-# https://github.com/mapbox/tippecanoe
-# https://www.mapbox.com/mapbox-gl-js/style-spec/#sources
-
 app = Flask(__name__)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 with open('data.geojson') as data_file:
     data = json.load(data_file)
 
-features = data['features']
+features = data['features'][:500]
 
 
 @app.route("/api/points")
 def root():
-    filters = (request.args.get('filters').split(
-        ',') if request.args.get('filters') else [])
+    visibleTypes = request.args.get('visibleTypes')
 
     response = {
         'type': 'FeatureCollection',
-        'features': list(map(simplify, filter(createFilter(filters), features)))
+        'features': filterPoints(visibleTypes)
     }
 
     return json.dumps(response)
+
+
+@cache.memoize(timeout=5)
+def filterPoints(visibleTypes):
+    visibleTypes = visibleTypes.split(',') if visibleTypes else []
+
+    return list(map(simplify, filter(createFilters(visibleTypes), features)))
 
 
 def simplify(feature):
@@ -41,14 +43,14 @@ def simplify(feature):
     }
 
 
-def createFilter(filters):
+def createFilters(filters):
     def filterFn(feature):
         for _filter in filters:
             filterFn = getFilterFunction(_filter)
             result = filterFn(feature)
             if result is True:
-                return False
-        return True
+                return True
+        return False
     return filterFn
 
 
