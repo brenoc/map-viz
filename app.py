@@ -23,6 +23,24 @@ def root():
     return json.dumps(response)
 
 
+@app.route("/api/places")
+def places():
+    response = {
+        'places': getPlaces()
+    }
+
+    return json.dumps(response)
+
+
+@cache.memoize(timeout=5)
+def getPlaces():
+    return list(set(map(getPlace, features)))
+
+
+def getPlace(feature):
+    return feature['properties']['prod_ds']
+
+
 @cache.memoize(timeout=5)
 def filterPoints(visibleTypes):
     visibleTypes = visibleTypes.split(',') if visibleTypes else []
