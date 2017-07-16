@@ -7,10 +7,13 @@ class Controllers extends Component {
     const { visibleTypes, onChangeVisibleTypes } = this.props;
 
     return (
-      <div className="mapboxgl-ctrl">
+      <div
+        className="mapboxgl-ctrl"
+        style={{ background: "#fff", padding: "10px", borderRadius: "4px" }}
+      >
         <div>
-          Locais Visíveis:
-          <ul>
+          <h3 style={{ marginTop: 0 }}>Locais Visíveis</h3>
+          <ul style={{ listStyleType: "none", padding: 0 }}>
             <li>
               <PlaceType
                 type={"res"}

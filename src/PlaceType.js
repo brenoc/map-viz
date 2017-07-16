@@ -25,6 +25,7 @@ class PlaceType extends Component {
           value={type}
           checked={includes(visibleTypes, type)}
           onChange={this.handleChange}
+          style={{ marginRight: "1em" }}
         />
         {label}
       </label>
