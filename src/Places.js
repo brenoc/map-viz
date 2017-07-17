@@ -42,7 +42,7 @@ class Controllers extends Component {
           <li>
             <PlaceType
               type={"turma"}
-              label={"Convênios"}
+              label={"Conveniados"}
               visibleTypes={visibleTypes}
               onChangeVisibleTypes={this.handleChangeVisibleTypes}
             />

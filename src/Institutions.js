@@ -46,7 +46,7 @@ class Institutions extends Component {
 
   render() {
     return (
-      <ControlBox title={"Convênios"}>
+      <ControlBox title={"Conveniados"}>
         {this.state.loading
           ? "Carregando"
           : <Autocomplete
