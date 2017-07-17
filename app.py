@@ -22,10 +22,12 @@ def root():
     visibleTypes = request.args.get('visibleTypes')
     course = request.args.get('course')
     institution = request.args.get('institution')
+    minGrade = request.args.get('minGrade')
+    maxGrade = request.args.get('maxGrade')
 
     response_data = {
         'type': 'FeatureCollection',
-        'features': filterPoints(visibleTypes, course, institution)
+        'features': filterPoints(visibleTypes, course, institution, minGrade, maxGrade)
     }
 
     resp = Response(json.dumps(response_data))
@@ -77,10 +79,10 @@ def getInstitution(feature):
 
 
 @cache.memoize(timeout=5)
-def filterPoints(visibleTypes, course, institution):
+def filterPoints(visibleTypes, course, institution, minGrade, maxGrade):
     visibleTypes = visibleTypes.split(',') if visibleTypes else []
 
-    return list(map(simplify, filter(createFilters(visibleTypes, course, institution), features)))
+    return list(map(simplify, filter(createFilters(visibleTypes, course, institution, minGrade, maxGrade), features)))
 
 
 def simplify(feature):
@@ -96,7 +98,7 @@ def simplify(feature):
     }
 
 
-def createFilters(filters, course, institution):
+def createFilters(filters, course, institution, minGrade, maxGrade):
     def filterFn(feature):
         for _filter in filters:
             filterFn = getFilterFunction(_filter)
@@ -110,11 +112,18 @@ def createFilters(filters, course, institution):
             if institution != '':
                 validInstitution = institutionFilter(feature, institution)
 
-            if result is True and validCourse and validInstitution:
+            validGrade = fitMinAndMaxGrade(feature, minGrade, maxGrade)
+
+            if result is True and validCourse and validInstitution and validGrade:
                 return True
 
         return False
     return filterFn
+
+
+def fitMinAndMaxGrade(feature, minGrade, maxGrade):
+    grade = feature['properties']['cr_curso']
+    return grade >= float(minGrade) and grade <= float(maxGrade)
 
 
 def courseFilter(feature, course):

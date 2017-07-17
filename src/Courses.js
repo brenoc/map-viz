@@ -1,16 +1,16 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import ControlBox from "../ControlBox";
-import Autocomplete from "../AutoComplete";
+import ControlBox from "./ControlBox";
+import Autocomplete from "./AutoComplete";
 import axios from "axios";
 
-class Institutions extends Component {
+class Courses extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       value: props.value,
-      institutions: [],
+      courses: [],
       loading: true
     };
 
@@ -19,12 +19,12 @@ class Institutions extends Component {
 
   componentDidMount() {
     this.requestToken = axios.CancelToken.source();
-    axios("/api/institutions", {
+    axios("/api/courses", {
       cancelToken: this.requestToken.token
     }).then(response => {
       this.setState({
         loading: false,
-        institutions: response.data.institutions
+        courses: response.data.courses
       });
     });
   }
@@ -46,12 +46,12 @@ class Institutions extends Component {
 
   render() {
     return (
-      <ControlBox title={"Convênios"}>
+      <ControlBox title={"Curso"}>
         {this.state.loading
           ? "Carregando"
           : <Autocomplete
               value={this.state.value}
-              items={this.state.institutions}
+              items={this.state.courses}
               onChange={this.handleChange}
               onSelect={this.handleSelect}
             />}
@@ -60,9 +60,9 @@ class Institutions extends Component {
   }
 }
 
-Institutions.propTypes = {
+Courses.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired
 };
 
-export default Institutions;
+export default Courses;

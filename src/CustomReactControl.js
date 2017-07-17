@@ -1,16 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Places from "./Places";
 
-class PlacesControl {
-  constructor(props) {
+class CustomReactControl {
+  constructor(Component, props) {
+    this.Component = Component;
     this.props = props;
   }
 
   onAdd() {
     this._container = document.createElement("div");
+    const Component = this.Component;
 
-    ReactDOM.render(<Places {...this.props} />, this._container);
+    ReactDOM.render(<Component {...this.props} />, this._container);
 
     return this._container;
   }
@@ -20,4 +21,4 @@ class PlacesControl {
   }
 }
 
-export default PlacesControl;
+export default CustomReactControl;

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import PlaceType from "./PlaceType";
-import ControlBox from "../ControlBox";
+import ControlBox from "./ControlBox";
 
 class Controllers extends Component {
   constructor(props) {

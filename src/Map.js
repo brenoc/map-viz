@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import PlacesControl from "./places/PlacesControl";
-import InstitutionsControl from "./institutions/InstitutionsControl";
-import CoursesControl from "./courses/CoursesControl";
+import CustomReactControl from "./CustomReactControl";
+import Places from "./Places";
+import Institutions from "./Institutions";
+import Courses from "./Courses";
+import Grades from "./Grades";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYnJlbm9jYWxhemFucyIsImEiOiI0YTBjN2M5NWQzNjJkODJlYzQyYjk5YTQ0NGE5NmIxNiJ9.GAoDtuWblQorGcnnSvVrJQ";
@@ -15,7 +17,8 @@ class Map extends Component {
     this.state = {
       visibleTypes: ["res", "trab", "turma"],
       course: "",
-      institution: ""
+      institution: "",
+      grade: { min: 0, max: 10 }
     };
 
     this.mountDiv = this.mountDiv.bind(this);
@@ -33,6 +36,10 @@ class Map extends Component {
     this.setState({ institution });
   };
 
+  handleChangeGrade = grade => {
+    this.setState({ grade });
+  };
+
   mountDiv = div => {
     if (!div) return;
 
@@ -48,7 +55,9 @@ class Map extends Component {
     return (
       nextState.visibleTypes.join() !== this.state.visibleTypes.join() ||
       nextState.course !== this.state.course ||
-      nextState.institution !== this.state.institution
+      nextState.institution !== this.state.institution ||
+      nextState.grade.min !== this.state.grade.min ||
+      nextState.grade.max !== this.state.grade.max
     );
   }
 
@@ -89,19 +98,25 @@ class Map extends Component {
     this.nav = new mapboxgl.NavigationControl();
     map.addControl(this.nav, "top-right");
 
-    this.institutionsControl = new InstitutionsControl({
+    this.institutionsControl = new CustomReactControl(Institutions, {
       onChange: this.handleChangeInstitution,
       value: this.state.institution
     });
     map.addControl(this.institutionsControl, "top-left");
 
-    this.coursesControl = new CoursesControl({
+    this.coursesControl = new CustomReactControl(Courses, {
       onChange: this.handleChangeCourse,
       value: this.state.course
     });
     map.addControl(this.coursesControl, "top-left");
 
-    this.placesControl = new PlacesControl({
+    this.gradesControl = new CustomReactControl(Grades, {
+      onChange: this.handleChangeGrade,
+      value: this.state.grade
+    });
+    map.addControl(this.gradesControl, "top-left");
+
+    this.placesControl = new CustomReactControl(Places, {
       onChangeVisibleTypes: this.handleChangeVisibleTypes,
       visibleTypes: this.state.visibleTypes
     });
@@ -110,13 +125,13 @@ class Map extends Component {
 
   changeMapPoints = () => {
     const map = this.map;
-    const { visibleTypes, course, institution } = this.state;
+    const { visibleTypes, course, institution, grade } = this.state;
 
     map.addSource("ide", {
       type: "geojson",
       data: `/api/points?visibleTypes=${visibleTypes.join(
         ","
-      )}&course=${course}&institution=${institution}`,
+      )}&course=${course}&institution=${institution}&minGrade=${grade.min}&maxGrade=${grade.max}`,
       cluster: true,
       clusterMaxZoom: 14, // Max zoom to cluster points on
       clusterRadius: 50
