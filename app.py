@@ -8,8 +8,10 @@ app = Flask(__name__)
 Compress(app)
 cache = Cache(
     app, config={
-        'CACHE_TYPE': 'filesystem',
-        'CACHE_DIR': './.cache'
+        'CACHE_TYPE': 'redis',
+        'CACHE_KEY_PREFIX': 'ide',
+        'CACHE_REDIS_HOST': '127.0.0.1',
+        'CACHE_REDIS_PORT': '6379'
     })
 
 with open('data.geojson') as data_file:
