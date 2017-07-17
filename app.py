@@ -77,10 +77,10 @@ def getInstitution(feature):
 
 
 @cache.memoize(timeout=5)
-def filterPoints(visibleTypes):
+def filterPoints(visibleTypes, course, institution):
     visibleTypes = visibleTypes.split(',') if visibleTypes else []
 
-    return list(map(simplify, filter(createFilters(visibleTypes), features)))
+    return list(map(simplify, filter(createFilters(visibleTypes, course, institution), features)))
 
 
 def simplify(feature):
@@ -96,15 +96,33 @@ def simplify(feature):
     }
 
 
-def createFilters(filters):
+def createFilters(filters, course, institution):
     def filterFn(feature):
         for _filter in filters:
             filterFn = getFilterFunction(_filter)
             result = filterFn(feature)
-            if result is True:
+
+            validCourse = True
+            if course != '':
+                validCourse = courseFilter(feature, course)
+
+            validInstitution = True
+            if institution != '':
+                validInstitution = institutionFilter(feature, institution)
+
+            if result is True and validCourse and validInstitution:
                 return True
+
         return False
     return filterFn
+
+
+def courseFilter(feature, course):
+    return feature['properties']['prod_ds'] == course
+
+
+def institutionFilter(feature, institution):
+    return feature['properties']['conveniado'] == institution
 
 
 def resFilter(feature):
@@ -127,7 +145,7 @@ def getFilterFunction(_filter):
     return {
         'res': resFilter,
         'trab': trabFilter,
-        'turma': turmaFilter
+        'turma': turmaFilter,
     }.get(_filter, noFilter)
 
 
