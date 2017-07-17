@@ -21,7 +21,6 @@ npm start
 Open another terminal and type:
 
 ```sh
-virtualenv venv
 source venv/bin/activate
 python app.py
 ```
