@@ -1,36 +1,50 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_caching import Cache
 import json
+import time
 
 app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(
+    app, config={
+        'CACHE_TYPE': 'filesystem',
+        'CACHE_DIR': './.cache'
+    })
 
 with open('data.geojson') as data_file:
     data = json.load(data_file)
 
-features = data['features'][:500]
+features = data['features']
 
 
 @app.route("/api/points")
+@cache.cached(timeout=50, query_string=True)
 def root():
     visibleTypes = request.args.get('visibleTypes')
+    course = request.args.get('course')
+    institution = request.args.get('institution')
 
-    response = {
+    response_data = {
         'type': 'FeatureCollection',
-        'features': filterPoints(visibleTypes)
+        'features': filterPoints(visibleTypes, course, institution)
     }
 
-    return json.dumps(response)
+    resp = Response(json.dumps(response_data))
+    resp.headers['x-cached-at'] = time.ctime()
+
+    return resp
 
 
 @app.route("/api/courses")
 @cache.cached(timeout=50)
 def courses():
-    response = {
+    response_data = {
         'courses': getCourses()
     }
 
-    return json.dumps(response)
+    resp = Response(json.dumps(response_data))
+    resp.headers['x-cached-at'] = time.ctime()
+
+    return resp
 
 
 def getCourses():
@@ -44,11 +58,14 @@ def getCourse(feature):
 @app.route("/api/institutions")
 @cache.cached(timeout=50)
 def institutions():
-    response = {
+    response_data = {
         'institutions': getInstitutions()
     }
 
-    return json.dumps(response)
+    resp = Response(json.dumps(response_data))
+    resp.headers['x-cached-at'] = time.ctime()
+
+    return resp
 
 
 def getInstitutions():
