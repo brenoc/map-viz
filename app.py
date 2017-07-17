@@ -1,9 +1,11 @@
 from flask import Flask, request, Response
 from flask_caching import Cache
+from flask_compress import Compress
 import json
 import time
 
 app = Flask(__name__)
+Compress(app)
 cache = Cache(
     app, config={
         'CACHE_TYPE': 'filesystem',
