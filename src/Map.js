@@ -13,7 +13,9 @@ class Map extends Component {
     super(props);
 
     this.state = {
-      visibleTypes: ["res", "trab"]
+      visibleTypes: ["res", "trab", "turma"],
+      course: "",
+      institution: ""
     };
 
     this.mountDiv = this.mountDiv.bind(this);
@@ -21,6 +23,14 @@ class Map extends Component {
 
   handleChangeVisibleTypes = visibleTypes => {
     this.setState({ visibleTypes });
+  };
+
+  handleChangeCourse = course => {
+    this.setState({ course });
+  };
+
+  handleChangeInstitution = institution => {
+    this.setState({ institution });
   };
 
   mountDiv = div => {
@@ -35,7 +45,11 @@ class Map extends Component {
   };
 
   shouldComponentUpdate(nextProps, nextState) {
-    return nextState.visibleTypes.join() !== this.state.visibleTypes.join();
+    return (
+      nextState.visibleTypes.join() !== this.state.visibleTypes.join() ||
+      nextState.course !== this.state.course ||
+      nextState.institution !== this.state.institution
+    );
   }
 
   componentDidMount() {
@@ -45,6 +59,7 @@ class Map extends Component {
     }
     this.map.on("load", () => {
       this.changeMapPoints();
+      this.addControls();
     });
   }
 
@@ -55,6 +70,7 @@ class Map extends Component {
     }
     this.map.on("load", () => {
       this.changeMapPoints();
+      this.addControls();
     });
   }
 
@@ -63,26 +79,25 @@ class Map extends Component {
     map.removeSource("ide");
     map.removeLayer("clusters");
     map.removeLayer("cluster-count");
+    map.removeLayer("turma-point");
     map.removeLayer("unclustered-point");
-    map.removeControl(this.nav);
-    map.removeControl(this.placesControl);
   };
 
-  changeMapPoints = () => {
+  addControls = () => {
     const map = this.map;
 
     this.nav = new mapboxgl.NavigationControl();
     map.addControl(this.nav, "top-right");
 
     this.institutionsControl = new InstitutionsControl({
-      onChangeVisibleTypes: this.handleChangeVisibleTypes,
-      visibleTypes: this.state.visibleTypes
+      onChange: this.handleChangeInstitution,
+      value: this.state.institution
     });
     map.addControl(this.institutionsControl, "top-left");
 
     this.coursesControl = new CoursesControl({
-      onChangeVisibleTypes: this.handleChangeVisibleTypes,
-      visibleTypes: this.state.visibleTypes
+      onChange: this.handleChangeCourse,
+      value: this.state.course
     });
     map.addControl(this.coursesControl, "top-left");
 
@@ -91,20 +106,46 @@ class Map extends Component {
       visibleTypes: this.state.visibleTypes
     });
     map.addControl(this.placesControl, "top-left");
+  };
+
+  changeMapPoints = () => {
+    const map = this.map;
+    const { visibleTypes, course, institution } = this.state;
 
     map.addSource("ide", {
       type: "geojson",
-      data: `/api/points?visibleTypes=${this.state.visibleTypes.join(",")}`,
+      data: `/api/points?visibleTypes=${visibleTypes.join(
+        ","
+      )}&course=${course}&institution=${institution}`,
       cluster: true,
       clusterMaxZoom: 14, // Max zoom to cluster points on
       clusterRadius: 50
     });
 
     map.addLayer({
+      id: "turma-point",
+      type: "circle",
+      source: "ide",
+      filter: ["==", "cep_type", "turma"],
+      paint: {
+        "circle-color": "#f00",
+        "circle-radius": 4,
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff"
+      }
+    });
+
+    const clusterFilter = [
+      "all",
+      ["!=", "cep_type", "turma"],
+      ["has", "point_count"]
+    ];
+
+    map.addLayer({
       id: "clusters",
       type: "circle",
       source: "ide",
-      filter: ["has", "point_count"],
+      filter: clusterFilter,
       paint: {
         "circle-color": {
           property: "point_count",
@@ -123,7 +164,7 @@ class Map extends Component {
       id: "cluster-count",
       type: "symbol",
       source: "ide",
-      filter: ["has", "point_count"],
+      filter: clusterFilter,
       layout: {
         "text-field": "{point_count_abbreviated}",
         "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
@@ -135,7 +176,7 @@ class Map extends Component {
       id: "unclustered-point",
       type: "circle",
       source: "ide",
-      filter: ["!has", "point_count"],
+      filter: ["all", ["!has", "point_count"], ["!=", "cep_type", "turma"]],
       paint: {
         "circle-color": "#11b4da",
         "circle-radius": 4,

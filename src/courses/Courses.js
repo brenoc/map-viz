@@ -9,7 +9,7 @@ class Courses extends Component {
     super(props);
 
     this.state = {
-      value: "",
+      value: props.value,
       courses: [],
       loading: true
     };
@@ -39,21 +39,30 @@ class Courses extends Component {
     this.setState({ value });
   };
 
+  handleSelect = value => {
+    this.setState({ value });
+    this.props.onChange(value);
+  };
+
   render() {
     return (
-      <ControlBox title={"Cursos"}>
+      <ControlBox title={"Curso"}>
         {this.state.loading
           ? "Carregando"
           : <Autocomplete
               value={this.state.value}
               items={this.state.courses}
               onChange={this.handleChange}
+              onSelect={this.handleSelect}
             />}
       </ControlBox>
     );
   }
 }
 
-Courses.propTypes = {};
+Courses.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired
+};
 
 export default Courses;

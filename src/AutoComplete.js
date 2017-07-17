@@ -2,14 +2,87 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Autocomplete from "react-autocomplete";
 import startCase from "lodash/startCase";
+import Fuse from "fuse.js";
 
 class AutoComplete extends Component {
+  constructor(props) {
+    super(props);
+
+    const items = this.transformItems(props.items);
+    this.state = {
+      items,
+      allItems: items
+    };
+
+    this.createFuse(this.state.items);
+    if (window.myItems) {
+      window.myItems2 = this.state.items;
+    }
+    window.myItems = window.myItems || this.state.items;
+
+    this.handleOnChange = this.handleOnChange.bind(this);
+  }
+
+  transformItems = items => {
+    return items
+      .map(item => ({
+        label: startCase(item),
+        value: item
+      }))
+      .sort(this.sortItems);
+  };
+
+  sortItems(a, b) {
+    return a.label.localeCompare(b.label);
+  }
+
+  createFuse = items => {
+    this.fuse = new Fuse(items, {
+      threshold: 0.6,
+      location: 0,
+      distance: 100,
+      maxPatternLength: 32,
+      minMatchCharLength: 1,
+      keys: ["label", "value"],
+      shouldSort: true
+    });
+  };
+
+  componenWillReceiveProps(nextProps) {
+    const newItems = this.transformItems(nextProps.items);
+
+    this.createFuse(newItems);
+
+    this.setState({
+      items: newItems
+    });
+  }
+
   handleOnChange = (e, value) => {
+    const emptiedValue =
+      this.props.value && this.props.value.length > 0 && value === "";
+    if (emptiedValue) {
+      this.setState({
+        items: this.state.allItems
+      });
+      this.props.onSelect(value);
+      return;
+    }
+
+    const result = this.fuse.search(value);
+    this.setState({
+      items: result
+    });
     this.props.onChange(value);
   };
 
+  handleOnSelect = value => {
+    this.props.onSelect(value);
+  };
+
   render() {
-    const { value, items, onChange } = this.props;
+    const { value } = this.props;
+    const { items } = this.state;
 
     return (
       <Autocomplete
@@ -22,11 +95,9 @@ class AutoComplete extends Component {
           }
         }}
         items={items}
-        getItemValue={item => item}
-        shouldItemRender={(item, value) =>
-          item.toLowerCase().indexOf(value.toLowerCase()) !== -1}
+        getItemValue={item => item.value}
         onChange={this.handleOnChange}
-        onSelect={onChange}
+        onSelect={this.handleOnSelect}
         renderItem={(item, isHighlighted) =>
           <div
             style={{
@@ -42,9 +113,9 @@ class AutoComplete extends Component {
                     background: "#fff"
                   })
             }}
-            key={item}
+            key={item.value}
           >
-            {startCase(item)}
+            {item.label}
           </div>}
       />
     );

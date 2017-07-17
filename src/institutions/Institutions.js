@@ -9,7 +9,7 @@ class Institutions extends Component {
     super(props);
 
     this.state = {
-      value: "",
+      value: props.value,
       institutions: [],
       loading: true
     };
@@ -39,6 +39,11 @@ class Institutions extends Component {
     this.setState({ value });
   };
 
+  handleSelect = value => {
+    this.setState({ value });
+    this.props.onChange(value);
+  };
+
   render() {
     return (
       <ControlBox title={"Convênios"}>
@@ -48,12 +53,16 @@ class Institutions extends Component {
               value={this.state.value}
               items={this.state.institutions}
               onChange={this.handleChange}
+              onSelect={this.handleSelect}
             />}
       </ControlBox>
     );
   }
 }
 
-Institutions.propTypes = {};
+Institutions.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired
+};
 
 export default Institutions;

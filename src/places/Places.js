@@ -4,8 +4,21 @@ import PlaceType from "./PlaceType";
 import ControlBox from "../ControlBox";
 
 class Controllers extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      visibleTypes: props.visibleTypes
+    };
+  }
+
+  handleChangeVisibleTypes = visibleTypes => {
+    this.setState({ visibleTypes });
+    this.props.onChangeVisibleTypes(visibleTypes);
+  };
+
   render() {
-    const { visibleTypes, onChangeVisibleTypes } = this.props;
+    const { visibleTypes } = this.state;
 
     return (
       <ControlBox title={"Locais Visíveis"}>
@@ -15,7 +28,7 @@ class Controllers extends Component {
               type={"res"}
               label={"Residências"}
               visibleTypes={visibleTypes}
-              onChangeVisibleTypes={onChangeVisibleTypes}
+              onChangeVisibleTypes={this.handleChangeVisibleTypes}
             />
           </li>
           <li>
@@ -23,7 +36,7 @@ class Controllers extends Component {
               type={"trab"}
               label={"Locais de Trabalho"}
               visibleTypes={visibleTypes}
-              onChangeVisibleTypes={onChangeVisibleTypes}
+              onChangeVisibleTypes={this.handleChangeVisibleTypes}
             />
           </li>
           <li>
@@ -31,7 +44,7 @@ class Controllers extends Component {
               type={"turma"}
               label={"Convênios"}
               visibleTypes={visibleTypes}
-              onChangeVisibleTypes={onChangeVisibleTypes}
+              onChangeVisibleTypes={this.handleChangeVisibleTypes}
             />
           </li>
         </ul>
